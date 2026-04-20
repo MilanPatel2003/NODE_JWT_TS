@@ -9,7 +9,7 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
   try {
     const email = req.body.email;
     if (!email) {
-      res.status(400).json({ error: "Email required" });
+      res.status(400).json({ message: "Email required" });
       return;
     }
 
@@ -63,6 +63,8 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
       email,
       password: plain,
     } = req.body as SignUpBody;
+    console.log(req.body);
+    
 
     const password = bcrypt.hashSync(plain, 8);
     const role_name = "user";

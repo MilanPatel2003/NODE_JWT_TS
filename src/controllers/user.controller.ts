@@ -9,6 +9,6 @@ export const userAccess = async (req:Request,res:Response) => {
     
 }
 export const adminAccess = async (req:Request,res:Response) => {
-    res.status(200).send("ADMIN CONTENT....")
+    res.status(200).send("ADMIN CONTENT....")   
     
 }

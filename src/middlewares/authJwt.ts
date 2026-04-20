@@ -59,7 +59,7 @@ const isAdmin = async (
     const [adminRole] = await db.query<RoleRow[]>(
       `SELECT role_id FROM roles WHERE role_name = ?`,
       [roleName],
-    ); //mile-an 
+    );
     if (user?.role_id != adminRole[0].role_id) {
       res.status(404).json({ message: "Not permited!" });
       return;
