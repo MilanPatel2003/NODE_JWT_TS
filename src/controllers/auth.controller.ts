@@ -5,6 +5,8 @@ import { JwtPayload, RoleRow, SignUpBody, User } from "../types";
 import { ResultSetHeader } from "mysql2";
 import jwt from "jsonwebtoken";
 import config from "../config/auth.config";
+
+
 export const signIn = async (req: Request, res: Response): Promise<void> => {
   try {
     const email = req.body.email;
@@ -34,6 +36,7 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
+    
     const payload: JwtPayload = {
       id: rows[0].user_id,
       email: rows[0].email,
