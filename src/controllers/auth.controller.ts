@@ -108,7 +108,7 @@ export const generateToken = async (req: Request, res: Response) => {
 
     const emailToken = jwt.sign({ email }, config.secret, {
       algorithm: "HS256",
-      expiresIn: 300,
+      expiresIn: 20,
     });
 
     res.status(201).json({ message: "Unique token generated!", emailToken });
@@ -131,16 +131,25 @@ export const changePassword = async (req: Request, res: Response) => {
     ) as emailJwtPayload;
 
     const email = decodeEmail.email;
+    
     const [rows] = await db.query<User[]>(
       `SELECT password FROM users WHERE email = ?`,
       [email],
     );
     const password = rows[0].password;
+    console.log(password);
+    console.log(hashedNewPassword);
+    
 
-    if (password === hashedNewPassword) {
-      res
-        .status(400)
-        .json({ message: "Can not use old password as new password!" });
+    const isPasswordValid = bcrypt.compareSync(
+      newPassword,
+      password,
+    );
+
+    if (isPasswordValid) {
+      res.status(401).json({
+        message: "New password cannot be same as old password!",
+      });
       return;
     }
 
