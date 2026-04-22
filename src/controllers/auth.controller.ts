@@ -6,7 +6,6 @@ import { ResultSetHeader } from "mysql2";
 import jwt from "jsonwebtoken";
 import config from "../config/auth.config";
 
-
 export const signIn = async (req: Request, res: Response): Promise<void> => {
   try {
     const email = req.body.email;
@@ -36,7 +35,7 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    
+
     const payload: JwtPayload = {
       id: rows[0].user_id,
       email: rows[0].email,
@@ -67,7 +66,6 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
       password: plain,
     } = req.body as SignUpBody;
     console.log(req.body);
-    
 
     const password = bcrypt.hashSync(plain, 8);
     const role_name = "user";
@@ -88,6 +86,69 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
       id: result.insertId,
       message: "User created successfully.",
     });
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+  }
+};
+
+export const generateToken = async (req: Request, res: Response) => {
+  console.log(req.body);
+  
+  try {
+    const { email } = req.body;
+    const [rows] = await db.query<User[]>(
+      `SELECT * FROM users WHERE email = ?`,
+      [email],
+    );
+
+    if (rows.length === 0) {
+      res.status(404).json({ message: "Email not found." });
+      return;
+    }
+
+    const emailToken = jwt.sign({ email }, config.secret, {
+      algorithm: "HS256",
+      expiresIn: 300,
+    });
+
+    res.status(201).json({ message: "Unique token generated!", emailToken });
+  } catch (err) {
+    res.status(500).json({ message: (err as Error).message });
+  }
+};
+
+export const changePassword = async (req: Request, res: Response) => {
+  interface emailJwtPayload {
+    email?: string;
+  }
+  try {
+    const { emailToken, newPassword } = req.body;
+    const hashedNewPassword = bcrypt.hashSync(newPassword, 8);
+
+    const decodeEmail = jwt.verify(
+      emailToken,
+      config.secret,
+    ) as emailJwtPayload;
+
+    const email = decodeEmail.email;
+    const [rows] = await db.query<User[]>(
+      `SELECT password FROM users WHERE email = ?`,
+      [email],
+    );
+    const password = rows[0].password;
+
+    if (password === hashedNewPassword) {
+      res
+        .status(400)
+        .json({ message: "Can not use old password as new password!" });
+      return;
+    }
+
+    await db.query<any>(`UPDATE users SET password=? WHERE email=?`, [
+      hashedNewPassword,
+      email,
+    ]);
+    res.status(201).json({ message: "Successfully changed password!" });
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
   }

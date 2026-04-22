@@ -1,12 +1,16 @@
 import express from "express";
 import verifySignUp from "../middlewares/verifySignup";
-import { signIn, signUp } from "../controllers/auth.controller";
-import { generateCaptcha } from "../middlewares/captcha";
+import { changePassword, generateToken, signIn, signUp } from "../controllers/auth.controller";
+import { deleteCaptcha, generateCaptcha, verifyCaptcha } from "../middlewares/captcha";
 
 const router =  express.Router()
 
-router.post("/signup",[verifySignUp.checkDuplicateUser],signUp)
-router.post("/signin",signIn)
+router.post("/signup",[verifySignUp.checkDuplicateUser,verifyCaptcha],signUp)
+router.post("/signin",[verifyCaptcha],signIn)
 router.get("/captcha",generateCaptcha)
+router.post("/captcha/delete",deleteCaptcha  )
+router.post("/generatetoken", generateToken)
+
+router.post("/changepassword", changePassword)
 
 export default router

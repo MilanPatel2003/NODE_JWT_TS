@@ -61,7 +61,7 @@ const isAdmin = async (
       [roleName],
     );
     if (user?.role_id != adminRole[0].role_id) {
-      res.status(404).json({ message: "Not permited!" });
+      res.status(403).json({ message: "Not permited!" });
       return;
     }
 
